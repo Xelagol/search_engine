@@ -11,7 +11,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 @Service
 public class CreateObjSearch
@@ -24,7 +23,6 @@ public class CreateObjSearch
         List<ResponseObjSearch> responseObjSearchList = new ArrayList<>();
         ResponseObjSearch responseObjSearch;
         Answer answer = new Answer();
-
         for (int i = 0; i < list.size(); i++)
         {
             for (String word : words)
@@ -34,16 +32,15 @@ public class CreateObjSearch
                 String[] pageIdRelSplitArr = pageIdRel.split("=", 2);
                 String pageIdRelSplit = pageIdRelSplitArr[0];
                 double relevance = Double.parseDouble(pageIdRelSplitArr[1]);
-
                 int pageIdOrderRel = Integer.parseInt(pageIdRelSplit);
                 Page page = pageRepository.findById(pageIdOrderRel).get();
                 String siteUrlSlesh = page.getSiteModel().getUrl();
                 String siteUrl = siteUrlSlesh.substring(0, siteUrlSlesh.length() - 1);
                 String siteName = page.getSiteModel().getName();
-                String uri = page.getPath(); /*— путь к странице вида /path/to/page/6784*/
+                String uri = page.getPath();
                 int titleStart = page.getContent().indexOf("<title>") + 7;
                 int titleStop = page.getContent().indexOf("</title>");
-                String title = page.getContent().substring(titleStart, titleStop);/* заголовок страницы*/
+                String title = page.getContent().substring(titleStart, titleStop);
                 String content = page.getContent();
                 String snip = Jsoup.clean(content, Safelist.simpleText());
                 String snipReplace = snip.replaceAll(word, "<b>" + word + "</b>");
@@ -58,7 +55,6 @@ public class CreateObjSearch
                 {
                     continue;
                 }
-
                 if (snipStart >= 0 && snipStart < 100)
                 {
                     snippet = snipReplace.substring(0, snipStart + 100);
@@ -66,9 +62,7 @@ public class CreateObjSearch
                 {
                     snippet = snipReplace.substring(snipStart - 100, snipStart + 100);
                 }
-                System.out.println(snippet + "\n" + page.getId());
-
-                responseObjSearch.setSiteUrl(siteUrl);
+                responseObjSearch.setSite(siteUrl);
                 responseObjSearch.setSiteName(siteName);
                 responseObjSearch.setUri(uri);
                 responseObjSearch.setTitle(title);

@@ -42,14 +42,13 @@ public class PageIndexing implements Runnable
     public void run()
     {
         tasksFork.clear();
-        int id = siteRepository.getIdByName(site.getName());
+        int id = Integer.parseInt(siteRepository.getIdByName(site.getName()));
         String path = siteRepository.getUrlById(id);
         RecursivePage.haveUrl.clear();
         ForkJoinPool task = new ForkJoinPool();
         task.invoke(new RecursivePage(path, id, pageRepository, siteRepository));
         tasksFork.add(task);
-}
-
+    }
 
     public ResponseTF terminateIndexing()
     {

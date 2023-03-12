@@ -46,7 +46,6 @@ public class LemmasCreator
     List<String> clearWords = new ArrayList<>();
     static Map<String, Integer> lemmasWordFreq;
 
-
     public LemmasCreator(PageRepository pageRepository, SiteRepository siteRepository, LemmasRepository lemmasRepository, IndexRepository indexRepository) throws IOException
     {
         this.pageRepository = pageRepository;
@@ -80,58 +79,45 @@ public class LemmasCreator
             {
                 pageIdPageContent = new HashMap<>();
                 siteId = page.getSiteModel().getId();
-                if (siteIdPageIdPageContent.containsKey(siteId)){
+                if (siteIdPageIdPageContent.containsKey(siteId))
+                {
                     pageIdPageContent.putAll(siteIdPageIdPageContent.get(siteId));
                 }
                 pageIdPageContent.put(page.getId(), page.getContent());
                 siteIdPageIdPageContent.put(page.getSiteModel().getId(), pageIdPageContent);
             }
         }
-
         for (Map.Entry<Integer, Map<Integer, String>> site : siteIdPageIdPageContent.entrySet())
         {
-//            lemmasWordFreq = new HashMap<>();
-
             for (Map.Entry<Integer, String> pageIdContent : site.getValue().entrySet())
             {
                 pageId = pageIdContent.getKey();
                 siteId = site.getKey();
-//            siteId = page.get().getSiteId();
-
                 String contentText = pageIdContent.getValue();
-//            String text = Jsoup.clean(contentText, Safelist.relaxed());
                 String cleanText = Jsoup.clean(contentText, Safelist.simpleText());
                 clearWords = inputText.getWordsList(cleanText);
                 if (clearWords.size() > 0)
                 {
                     createLemmas(clearWords, siteId, pageId, false);
-
                 }
             }
-
         }
     }
-
 
     public ResponseTF pageLemmaCreating(String path) throws IOException
     {
         String siteUrl = path.replaceAll("(?<=https?://[^/]{1,65353}/).*", "");/* обрезаем http(s)://www и добавляем / */
         siteUrl = siteUrl.replaceAll("^www\\.", "");
         siteUrl = siteUrl.replaceAll("^https?://w{0,3}\\.?", "");
-//        siteUrl = siteUrl.replaceAll("(?<=(?<=https?://)[^/]{1,65535}/).*", "");/* обрезаем до главного адреса без www*/
-//        String url = siteUrl.replaceAll("(?<=^https?://)www\\.", "") + "/"; /*убираем www и добавляем слэш, если нет*/
-//        String url = siteUrl.replaceAll("(?<=(?<=http\\w?://)[^/]{1,65535}/).*", ""); /*убираем второй слэш в конце, если есть*/
         Iterable<SiteModel> sitesObj = siteRepository.findAll();
-        String pathForFindInRepo = path.replaceAll("(?<![^.])http\\w?://[^/]+/?", "/"); /*убираем www и добавляем слэш, если нет*/
-//        pathForFindInRepo = pathForFindInRepo.replaceAll("(?<=(?<=http\\w?://)[^/]{1,65535}/).*", ""); /*убираем второй слэш в конце, если есть*/
-
+        String pathForFindInRepo = path.replaceAll("(?<![^.])http\\w?://[^/]+/?", "/");
         for (SiteModel site : sitesObj)
         {
             String objSiteUrl = site.getUrl();
             objSiteUrl = objSiteUrl.replaceAll("^https?://w{0,3}\\.?", "");
             if (objSiteUrl.equals(siteUrl))
             {
-                int siteId = siteRepository.getIdByName(site.getName());
+                int siteId = Integer.parseInt(siteRepository.getIdByName(site.getName()));
                 Document doc = Jsoup.connect(path).userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) " +
                                 "AppleWebKit/537.36 (KHTML, like Gecko) " +
                                 "Chrome/109.0.0.0 Safari/537.36")
@@ -142,15 +128,14 @@ public class LemmasCreator
                 String content = Jsoup.clean(contentHtml, Safelist.simpleText());
                 List<String> wordsList = new SplitterInputText().getWordsList(content);
                 Page page = new Page();
-                page.setPath(path);/* адрес страницы от корня сайта (должен начинаться со слэша, например: /news/372189/)*/
-//                page.setSiteId(siteId);
+                page.setPath(path);
                 page.setSiteModel(siteRepository.findById(siteId).get());
-                page.setContent(contentHtml); /*контент страницы(HTML-код).*/
-                page.setCode(code);/* код HTTP-ответа, полученный при запросе страницы (например, 200, 404, 500 или другие);*/
+                page.setContent(contentHtml);
+                page.setCode(code);
                 int pageId = pageRepository.getIdPageByPath(pathForFindInRepo);
                 if (pageId == 0)
                 {
-                    pageId = pageRepository.save(page).getId(); /*получаю Id сохраненной page*/
+                    pageId = pageRepository.save(page).getId();
                 } else
                 {
                     pageRepository.updatePageIfExist(code, contentHtml, pathForFindInRepo);
@@ -213,7 +198,6 @@ public class LemmasCreator
                 lemmasWordRank.put(wrd, rank);
             }
         }
-
         lemmasWordRank.entrySet().forEach(obj ->
         {
             Lemma lemma = new Lemma();
@@ -225,18 +209,14 @@ public class LemmasCreator
                 lmmId = Integer.parseInt(lemmaId);
                 lmm = lemmasRepository.findById(lmmId).get();
                 lemmasRepository.updateFreqLemma(obj.getKey(), lemmasWordFreq.get(obj.getKey()), siteId);
-
             } else
             {
                 lemma.setLemma(obj.getKey());
-//                lemma.setSiteModel(siteRepository.findById(siteId).get());
                 lemma.setSiteId(siteId);
                 lemma.setFrequency(lemmasWordFreq.get(obj.getKey()));
                 lmm = lemmasRepository.save(lemma);
             }
-
             int countLemmaString = lemmasRepository.getCountLemmaIsExist(obj.getKey(), pageId);
-
             if (countLemmaString != 0)
             {
                 indexRepository.updateRankLemma(lmm.getId(), obj.getValue(), pageId);
@@ -248,9 +228,7 @@ public class LemmasCreator
                 index.setPageId(pageId);
                 indexRepository.save(index);
             }
-
         });
-
     }
 }
 

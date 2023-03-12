@@ -21,6 +21,7 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.Future;
 
 @Setter
@@ -29,11 +30,11 @@ import java.util.concurrent.Future;
 @RequiredArgsConstructor
 public class SiteIndexing
 {
-    //    SimpleDateFormat sdf = new SimpleDateFormat("yyyy.MM.dd HH-mm-ss");
     private static final int aviableProc = Runtime.getRuntime().availableProcessors();
     private final ExecutorService executorService = Executors.newFixedThreadPool(aviableProc);
     static List<Future<?>> futureList = new ArrayList<>();
     private final SitesList sites;
+    static List<Runnable> tasksList = new ArrayList<>();
 
     @Autowired
     PageRepository pageRepository;
@@ -59,9 +60,9 @@ public class SiteIndexing
             {
                 int siteId = objIdName.get(site.getName());
                 if (idSites.contains(siteId))
-                lemmasRepository.deleteLemmaBySiteId(siteId);
-                pageRepository.deletePageBySiteId(siteId);
-                    siteRepository.deleteSiteByName(site.getName());
+                    lemmasRepository.deleteLemmaBySiteId(siteId);
+//                pageRepository.deletePageBySiteId(siteId);
+                siteRepository.deleteSiteByName(site.getName());
 //                SiteModel sM = siteRepository.findById(siteId).get();
 //                siteRepository.deleteById(siteId);
             }
@@ -71,7 +72,6 @@ public class SiteIndexing
             if (countSiteUpdt == 0)
             {
                 SiteModel siteEntity = new SiteModel();
-
                 siteEntity.setName(site.getName());
                 siteEntity.setUrl(url);
                 siteEntity.setLastError("");
@@ -79,11 +79,10 @@ public class SiteIndexing
                 siteEntity.setStatusTime(new Date(System.currentTimeMillis()));
                 siteRepository.save(siteEntity);
             }
-
             Runnable task = new PageIndexing(site, pageRepository, siteRepository);
             Future<?> f = executorService.submit(task);
             futureList.add(f);
-
+            tasksList.add(task);
         }
         try
         {
@@ -92,7 +91,6 @@ public class SiteIndexing
         {
             throw new RuntimeException(e);
         }
-
     }
 
     private void checkIndexing(List<Future<?>> futureList) throws IOException
@@ -118,7 +116,7 @@ public class SiteIndexing
         }
     }
 
-    public ResponseTF indexingIsAllowed() throws IOException
+    public ResponseTF indexingIsAllowed()
     {
         for (Future<?> future : SiteIndexing.futureList)
         {
@@ -136,7 +134,21 @@ public class SiteIndexing
             }
         };
         thread.start();
-
         return new TrueResponse(true);
+    }
+
+    public ResponseTF terminateIndexing()
+    {
+        boolean isRunning = false;
+        for (Future<?> future : SiteIndexing.futureList)
+        {
+            if (!future.isDone())
+            {
+                Runnable d = tasksList.get(0);
+
+                isRunning = true;
+            }
+        }
+        return isRunning ? new TrueResponse(true) : new FalseResponse(false, "Индексация не запущена");
     }
 }

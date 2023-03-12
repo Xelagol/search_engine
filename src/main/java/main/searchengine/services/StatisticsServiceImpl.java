@@ -40,13 +40,11 @@ public class StatisticsServiceImpl implements StatisticsService
         DetailedStatisticsItem item;
         StatisticsResponse response = new StatisticsResponse();
         StatisticsData data = new StatisticsData();
-
         Iterable<SiteModel> siteModels = siteRepository.findAll();
         if (!siteModels.iterator().hasNext())
         {
             total.setSites(sites.getSites().size());
             total.setIndexing(true);
-
             List<Site> sitesList = sites.getSites();
             for (int i = 0; i < sitesList.size(); i++)
             {
@@ -63,45 +61,56 @@ public class StatisticsServiceImpl implements StatisticsService
                 total.setLemmas(0);
                 detailed.add(item);
             }
-
             data.setTotal(total);
             data.setDetailed(detailed);
             response.setStatistics(data);
             response.setResult(true);
-
             return response;
         }
-
-
         total.setSites(sites.getSites().size());
         total.setIndexing(true);
-
         List<Site> sitesList = sites.getSites();
         for (int i = 0; i < sitesList.size(); i++)
         {
             item = new DetailedStatisticsItem();
             Site site = sitesList.get(i);
-            int siteId = siteRepository.getIdByName(site.getName());
-            Optional<SiteModel> siteModelOptional = siteRepository.findById(siteId);
-            if (siteModelOptional.isPresent())
+            String siteIdString = siteRepository.getIdByName(site.getName());
+            int siteId;
+            if (siteIdString == null)
             {
-                siteModel = siteModelOptional.get();
+                siteId = 0;
+                item.setName(site.getName());
+                item.setUrl(site.getUrl());
+                item.setPages(0);
+                item.setLemmas(0);
+                item.setStatus("Not index");
+                item.setError("");
+                item.setStatusTime(System.currentTimeMillis());
+                total.setPages(total.getPages());
+                total.setLemmas(total.getLemmas());
+            } else
+            {
+                siteId = Integer.parseInt(siteIdString);
+
+                Optional<SiteModel> siteModelOptional = siteRepository.findById(siteId);
+                if (siteModelOptional.isPresent())
+                {
+                    siteModel = siteModelOptional.get();
+                    item.setName(siteModel.getName());
+                    item.setUrl(siteModel.getUrl());
+                }
+                int pages = pageRepository.getCountIdPageBySiteId(siteId);
+                int lemmas = lemmasRepository.getCountIdLemmasBySiteId(siteId);
+                item.setPages(pages);
+                item.setLemmas(lemmas);
+                item.setStatus(siteModel.getStatus().toString());
+                item.setError(siteModel.getLastError());
+                item.setStatusTime(System.currentTimeMillis());
+                total.setPages(total.getPages() + pages);
+                total.setLemmas(total.getLemmas() + lemmas);
             }
-            item.setName(siteModel.getName());
-            item.setUrl(siteModel.getUrl());
-            int pages = pageRepository.getCountIdPageBySiteId(siteId);
-            int lemmas = lemmasRepository.getCountIdLemmasBySiteId(siteId);
-            item.setPages(pages);
-            item.setLemmas(lemmas);
-            item.setStatus(siteModel.getStatus().toString());
-            item.setError(siteModel.getLastError());
-            item.setStatusTime(System.currentTimeMillis());
-            total.setPages(total.getPages() + pages);
-            total.setLemmas(total.getLemmas() + lemmas);
             detailed.add(item);
         }
-
-
         data.setTotal(total);
         data.setDetailed(detailed);
         response.setStatistics(data);

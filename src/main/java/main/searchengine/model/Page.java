@@ -19,24 +19,20 @@ public class Page
     @Column(nullable = false)
     private int id;
 
-//        @Column(name = "site_id", nullable = false, insertable=false, updatable=false)
-//    private int siteId; /*ID веб-сайта из таблицы site;*/
-//    @ManyToOne(cascade = CascadeType.MERGE, fetch = FetchType.LAZY)
-
-    @ManyToOne(fetch = FetchType.EAGER, targetEntity = SiteModel.class)
-    @JoinColumn(foreignKey = @ForeignKey(name = "siteIdPageKey"), columnDefinition = "Integer",
-            referencedColumnName = "id", name = "site_id", nullable = false)
-//    @OnDelete(action = OnDeleteAction.CASCADE)
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.MERGE, optional = false)
+    @JoinColumn(name = "site_id", nullable = false, foreignKey =
+    @ForeignKey(name = "FK_page_site"))
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private SiteModel siteModel;
 
     @Column(columnDefinition = "TEXT not null, index (path(30))")
-    private String path; /* адрес страницы от корня сайта (должен начинаться со слэша, например: /news/372189/)*/
+    private String path;
 
     @Column(nullable = false)
-    private int code; /* код HTTP-ответа, полученный при запросе страницы (например, 200, 404, 500 или другие);*/
+    private int code;
 
     @Column(columnDefinition = "mediumtext", nullable = false)
-    private String content; /*контент страницы(HTML-код).*/
+    private String content;
 
 
 //    @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)

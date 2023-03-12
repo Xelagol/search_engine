@@ -7,8 +7,6 @@ public class SplitterInputText
 {
     public List<String> getWordsList(String text)
     {
-//        String text = "Повторное появление леопарда в Осетии позволяет предположить, что леопард постоянно обитает в некоторых районах Северного Кавказа";
-
         String[] words = text.split(" ");
         List<String> wordsList = new ArrayList<>();
         for (String word : words)

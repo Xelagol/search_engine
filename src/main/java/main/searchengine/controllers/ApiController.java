@@ -42,7 +42,6 @@ public class ApiController
     @GetMapping("/startIndexing")
     public ResponseEntity startIndexing() throws IOException
     {
-//        siteIndexing.indexingSite();
         return ResponseEntity.ok(siteIndexing.indexingIsAllowed());
     }
 

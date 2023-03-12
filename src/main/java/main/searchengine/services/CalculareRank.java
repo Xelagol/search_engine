@@ -38,34 +38,23 @@ public class CalculareRank
     @Autowired
     CreateObjSearch createObjSearch;
 
-
     public Answer calculateRank(List<Integer> listPagesContainsLemma, List<String> words)
     {
         Map<Integer, Integer> rankAbsPageIdRank = new HashMap<>();
         Map<Integer, Double> rankPageIdRelevant = new HashMap<>();
-        List<Integer> rankList = new ArrayList<>();
-
         double maxRankTotAbs = 0;
-
         for (int pageId : listPagesContainsLemma)
         {
             int rankTotAbs = 0;
-            Integer rank = 0;
+            Integer rank;
             for (String word : words)
             {
-//                if (site.isEmpty())
-//                {
-                    rank = lemmasRepository.getRankByLemmaPageId(word, pageId);
-                    if (rank == null)
-                    {
-                        continue;
-                    }
-//                } else
-//                {
-//                    int siteId = siteRepository.getIdByName(site);
-////                    rank = lemmasRepository.getRankByLemmaPageIdSiteId(word, pageId, siteId);
-//                }
-                rankTotAbs +=  rank;
+                rank = lemmasRepository.getRankByLemmaPageId(word, pageId);
+                if (rank == null)
+                {
+                    continue;
+                }
+                rankTotAbs += rank;
             }
             if (rankTotAbs > maxRankTotAbs)
             {
@@ -73,14 +62,12 @@ public class CalculareRank
             }
             rankAbsPageIdRank.put(pageId, rankTotAbs);
         }
-
         for (Map.Entry<Integer, Integer> pageIdRankTotAbs : rankAbsPageIdRank.entrySet())
         {
             double rankTotRelevant = pageIdRankTotAbs.getValue() / maxRankTotAbs;
             rankPageIdRelevant.put(pageIdRankTotAbs.getKey(), rankTotRelevant);
         }
         List list = new ArrayList(rankPageIdRelevant.entrySet());
-
         Collections.sort(list, new Comparator<Map.Entry<Integer, Double>>()
         {
             @Override
@@ -97,9 +84,6 @@ public class CalculareRank
                 return 0;
             }
         });
-
         return createObjSearch.createAnswer(list, words);
-
-
     }
 }

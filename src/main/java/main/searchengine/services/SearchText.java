@@ -38,26 +38,20 @@ public class SearchText
     public Answer search(String text, String site) throws IOException
     {
         List<String> wordsList = new SplitterInputText().getWordsList(text);
-
         List<Integer> pagesId = new ArrayList<>();
-
-
         List<String> words = createUniqLemma(wordsList);
         List<Integer> listPagesContainsLemma = searchPage(words, pagesId, site);
         return calculareRank.calculateRank(listPagesContainsLemma, words);
-
     }
 
     private List<String> createUniqLemma(List<String> wordsList) throws IOException
     {
         LuceneMorphology luceneMorph = new RussianLuceneMorphology();
-        List<String> wordBaseForms = new ArrayList<>();
-
+        List<String> wordBaseForms;
         Map<String, Integer> lemmasUniqWordRank = new HashMap<>();
         for (String word : wordsList)
         {
             boolean delete = false;
-
             wordBaseForms = luceneMorph.getMorphInfo(word);
             String wordsToken = wordBaseForms.get(0);
             String[] wordSplit = wordsToken.split(" ");
@@ -97,9 +91,7 @@ public class SearchText
             }
             lemmasUniq.replace(lemma.getKey(), freq);
         }
-
         List list = new ArrayList(lemmasUniq.entrySet());
-
         Collections.sort(list, new Comparator<Map.Entry<String, Integer>>()
         {
             @Override
@@ -123,15 +115,12 @@ public class SearchText
     {
         List<String> wrd = new ArrayList<>();
         List<Integer> listPagesContainsLemma = new ArrayList<>();
-
         if (words.size() == 1)
         {
-
             String word = words.get(0);
             List<Integer> listLemmaId = lemmasRepository.getLemmaIdListByLemma(word);
             for (int lemmaId : listLemmaId)
             {
-
                 List<Integer> listPageId;
                 if (site == null)
                 {
@@ -141,7 +130,8 @@ public class SearchText
                     int siteId = siteRepository.getIdByUrl(site);
                     listPageId = indexRepository.getPageIdListByLemmaIdSiteId(lemmaId, siteId);
                 }
-                if (pages.size() == 0 ) {
+                if (pages.size() == 0)
+                {
                     return listPageId;
                 }
                 for (int pId : pages)
@@ -154,7 +144,6 @@ public class SearchText
             }
             return listPagesContainsLemma;
         }
-
         if (!pages.isEmpty())
         {
             List<Integer> restPages = new ArrayList<>();
@@ -190,8 +179,6 @@ public class SearchText
 
             return searchPage(wrd, restPages, site);
         }
-
-
         String word = words.get(0);
         List<Integer> restPages;
         if (site == null)
@@ -202,17 +189,12 @@ public class SearchText
             int siteId = siteRepository.getIdByUrl(site);
             restPages = lemmasRepository.getPageIdListByLemmaSiteId(word, siteId);
         }
-
         for (int i = 1; i < words.size(); i++)
         {
             wrd.add(words.get(i));
         }
-
         return searchPage(wrd, restPages, site);
-
-
     }
-
 }
 
 

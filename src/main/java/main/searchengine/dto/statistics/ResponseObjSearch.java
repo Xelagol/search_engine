@@ -5,10 +5,10 @@ import lombok.Data;
 @Data
 public class ResponseObjSearch
 {
-    String siteUrl;
+    String site;
     String siteName;
-    String uri; /*— путь к странице вида /path/to/page/6784*/
-    String title;/* заголовок страницы*/
-    String snippet; /* фрагмент текста, в котором найдены совпадения (см. ниже)*/
+    String uri;
+    String title;
+    String snippet;
     double relevance;
 }

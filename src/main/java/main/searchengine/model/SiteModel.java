@@ -23,33 +23,20 @@ public class SiteModel
 
     @Enumerated(EnumType.STRING)
     @Column(columnDefinition = "ENUM('INDEXING', 'INDEXED', 'FAILED')", nullable = false)
-    private Status status; /* текущий статус полной индексации сайта, отражающий готовность поискового движка
-                            осуществлять поиск по сайту — индексация или переиндексация в процессе, сайт полностью
-                            проиндексирован(готов к поиску) либо его не удалось проиндексировать (сайт не готов к
-                            поиску и не будет до устранения ошибок и перезапуска индексации) */
+    private Status status;
 
     @Column(name = "status_time", columnDefinition = "DATETIME", nullable = false)
-    private Date statusTime; /* DATETIME NOT NULL — дата и время статуса (в случае статуса INDEXING дата и время должны
-                                 обновляться регулярно при добавлении каждой новой страницы в индекс); */
+    private Date statusTime;
 
     @Column(name = "last_error", columnDefinition = "text")
-    private String lastError;   /*TEXT — текст ошибки индексации или NULL,если её не было; */
+    private String lastError;
 
     @Column(columnDefinition = "varchar(255)", nullable = false)
-    private String url; /*адрес главной страницы сайта */
+    private String url;
 
     @Column(columnDefinition = "varchar(255)", nullable = false)
-    private String name;  /*имя сайта */
+    private String name;
 
-    //
-    @OneToMany(mappedBy = "siteModel", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
-//    @OneToMany (mappedBy = "siteModel")
-//    @OnDelete(action = OnDeleteAction.)
-    private Set<Page> pages;
-
-//    @OneToMany(mappedBy = "siteModel", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-////    @OneToMany (mappedBy = "siteModel")
-////    @OnDelete(action = OnDeleteAction.)
-//    private Set<Lemma> lemmas;
-
+    @OneToMany(mappedBy = "siteModel", fetch = FetchType.EAGER)
+    private Set<Page> pages = new HashSet<>();
 }

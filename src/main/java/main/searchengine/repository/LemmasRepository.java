@@ -16,10 +16,6 @@ public interface LemmasRepository extends CrudRepository<Lemma, Integer>
     @Query(value = "SELECT `rank` FROM search_engine.index i join  lemmas l on i.lemma_id=l.id where lemma=:lemma and page_id=:page_id", nativeQuery = true)
     Integer getRankByLemmaPageId(@Param("lemma") String lemma, @Param("page_id") int pageId);
 
-//    @Query(value = "SELECT `rank`FROM search_engine.index i join  lemmas l on i.lemma_id=l.id where lemma=:lemma and page_id=:page_id and site_id=:site_id", nativeQuery = true)
-//    int getRankByLemmaPageIdSiteId(@Param("lemma") String lemma, @Param("page_id") int pageId, @Param("site_id") int site_id);
-
-
     @Query(value = "SELECT id FROM LEMMAS WHERE lemma=:lemma", nativeQuery = true)
     List<Integer> getLemmaIdListByLemma(@Param("lemma") String lemma);
 
@@ -43,12 +39,6 @@ public interface LemmasRepository extends CrudRepository<Lemma, Integer>
 
     @Transactional
     @Modifying
-    @Query(value = "DELETE FROM LEMMAS WHERE lemma= :lemma", nativeQuery = true)
-    void deleteLemmaByName(@Param("lemma") String lemma);
-
-
-    @Transactional
-    @Modifying
     @Query(value = "DELETE FROM LEMMAS WHERE site_id= :site_id", nativeQuery = true)
     void deleteLemmaBySiteId(@Param("site_id") int site_id);
 
@@ -66,5 +56,8 @@ public interface LemmasRepository extends CrudRepository<Lemma, Integer>
     @Query(value = "SELECT page_id FROM `index` i join  lemmas l on i.lemma_id=l.id where lemma=:lemma and site_id=:site_id", nativeQuery = true)
     List<Integer> getPageIdListByLemmaSiteId(@Param("lemma") String lemma, @Param("site_id") int site_id);
 
-
+//    @Transactional
+//    @Modifying
+//    @Query(value = "DELETE FROM LEMMAS WHERE lemma= :lemma", nativeQuery = true)
+//    void deleteLemmaByName(@Param("lemma") String lemma);
 }
